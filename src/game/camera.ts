@@ -4,6 +4,10 @@ import type { Vec2 } from "./types";
 const CLOSE_RATIO = 0.25; // 얼굴 폭이 화면 폭의 25% 미만 → "좀 더 가까이"
 const FAR_RATIO = 0.6; // 얼굴 폭이 화면 폭의 60% 초과 → "폰을 조금 멀리"
 
+// 노트북에는 시선추적 소프트웨어 등이 설치한 "가상 카메라"가 진짜 웹캠과 함께 잡히는 경우가 있다.
+// 실제 화면이 안 나오므로 자동 선택에서는 피해준다.
+const VIRTUAL_CAMERA_HINT = /virtual|mirametrix|obs|snap camera|iriun|droidcam/i;
+
 export type DistanceHint = "closer" | "farther" | null;
 
 export interface CameraCallbacks {
@@ -46,21 +50,20 @@ export class Camera {
     this.video.autoplay = true;
   }
 
-  async start(): Promise<boolean> {
-    const isMobile = this.isMobile;
-    const constraints: MediaStreamConstraints = isMobile
-      ? {
-          video: {
-            facingMode: "user",
-            width: { ideal: 720 },
-            height: { ideal: 1280 },
-            aspectRatio: { ideal: 9 / 16 },
-          },
-        }
-      : { video: { facingMode: "user", width: { ideal: 1280 }, height: { ideal: 720 } } };
+  private buildConstraints(deviceId?: string): MediaStreamConstraints {
+    const base = this.isMobile
+      ? { width: { ideal: 720 }, height: { ideal: 1280 }, aspectRatio: { ideal: 9 / 16 } }
+      : { width: { ideal: 1280 }, height: { ideal: 720 } };
 
+    if (deviceId) {
+      return { video: { ...base, deviceId: { exact: deviceId } } };
+    }
+    return { video: { ...base, facingMode: "user" } };
+  }
+
+  async start(deviceId?: string): Promise<boolean> {
     try {
-      this.stream = await navigator.mediaDevices.getUserMedia(constraints);
+      this.stream = await navigator.mediaDevices.getUserMedia(this.buildConstraints(deviceId));
     } catch (err) {
       const name = (err as DOMException)?.name;
       if (name === "NotFoundError" || name === "OverconstrainedError") {
@@ -71,10 +74,12 @@ export class Camera {
       return false;
     }
 
-    this.video.srcObject = this.stream;
-    await this.video.play().catch(() => {
-      /* 자동재생 차단 시 무시 — 사용자 제스처(시작 버튼)로 이미 호출되었으므로 보통 통과 */
-    });
+    await this.attachStream();
+
+    // 가상 카메라(시선추적 SW 등)가 자동으로 골라졌으면, 다른 진짜 카메라가 있는지 확인해서 바꿔치기한다.
+    if (!deviceId) {
+      await this.avoidVirtualCameraIfPossible();
+    }
 
     if (!this.orientationQuery) {
       this.orientationQuery = window.matchMedia("(orientation: landscape)");
@@ -85,6 +90,59 @@ export class Camera {
 
     await this.requestWakeLock();
     return true;
+  }
+
+  private async attachStream() {
+    this.video.srcObject = this.stream;
+    await this.video.play().catch(() => {
+      /* 자동재생 차단 시 무시 — 사용자 제스처(시작 버튼)로 이미 호출되었으므로 보통 통과 */
+    });
+  }
+
+  private async avoidVirtualCameraIfPossible() {
+    const currentLabel = this.stream?.getVideoTracks()[0]?.label ?? "";
+    if (!VIRTUAL_CAMERA_HINT.test(currentLabel)) return;
+
+    const cameras = await this.listCameras();
+    const currentId = this.activeDeviceId;
+    const alternative = cameras.find(
+      (d) => d.deviceId !== currentId && !VIRTUAL_CAMERA_HINT.test(d.label),
+    );
+    if (alternative) {
+      await this.switchDevice(alternative.deviceId);
+    }
+  }
+
+  // 연결된 모든 카메라 장치 목록 (라벨은 권한을 이미 얻은 뒤에만 보임)
+  async listCameras(): Promise<MediaDeviceInfo[]> {
+    try {
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      return devices.filter((d) => d.kind === "videoinput");
+    } catch {
+      return [];
+    }
+  }
+
+  // 사용자가 직접(또는 자동으로) 다른 카메라 장치로 바꿀 때 사용
+  async switchDevice(deviceId: string): Promise<boolean> {
+    const oldStream = this.stream;
+    try {
+      this.stream = await navigator.mediaDevices.getUserMedia(this.buildConstraints(deviceId));
+    } catch (err) {
+      console.error("[Camera] 카메라 전환 실패:", err);
+      return false;
+    }
+    oldStream?.getTracks().forEach((t) => t.stop());
+    await this.attachStream();
+    return true;
+  }
+
+  get activeDeviceId(): string | undefined {
+    return this.stream?.getVideoTracks()[0]?.getSettings().deviceId;
+  }
+
+  get activeDeviceLabel(): string {
+    return this.stream?.getVideoTracks()[0]?.label ?? "";
   }
 
   private async requestWakeLock() {
@@ -105,7 +163,7 @@ export class Camera {
     }
     const track = this.stream?.getVideoTracks()[0];
     if (!track || track.readyState === "ended") {
-      await this.start();
+      await this.start(this.activeDeviceId);
     } else {
       await this.video.play().catch(() => {});
       await this.requestWakeLock();

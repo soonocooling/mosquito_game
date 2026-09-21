@@ -82,3 +82,22 @@
 .status-message.visible {
   display: flex;
 }
+
+.camera-select {
+  position: fixed;
+  top: calc(env(safe-area-inset-top, 0px) + 8px);
+  right: 8px;
+  z-index: 25;
+  display: none;
+  font-family: system-ui, sans-serif;
+  font-size: 12px;
+  padding: 4px 6px;
+  border-radius: 6px;
+  border: none;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  max-width: 45vw;
+}
+.camera-select.visible {
+  display: block;
+}

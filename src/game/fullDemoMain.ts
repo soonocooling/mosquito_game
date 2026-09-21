@@ -34,6 +34,32 @@ const statusEl = document.createElement("div");
 statusEl.className = "status-message";
 app.appendChild(statusEl);
 
+const cameraSelect = document.createElement("select");
+cameraSelect.className = "camera-select";
+app.appendChild(cameraSelect);
+
+async function refreshCameraList() {
+  const cameras = await camera.listCameras();
+  if (cameras.length <= 1) {
+    cameraSelect.classList.remove("visible");
+    return;
+  }
+  cameraSelect.innerHTML = "";
+  const activeId = camera.activeDeviceId;
+  cameras.forEach((c, i) => {
+    const opt = document.createElement("option");
+    opt.value = c.deviceId;
+    opt.textContent = c.label || `카메라 ${i + 1}`;
+    if (c.deviceId === activeId) opt.selected = true;
+    cameraSelect.appendChild(opt);
+  });
+  cameraSelect.classList.add("visible");
+}
+
+cameraSelect.addEventListener("change", async () => {
+  await camera.switchDevice(cameraSelect.value);
+});
+
 function showStatus(text: string) {
   statusEl.textContent = text;
   statusEl.classList.add("visible");
@@ -152,7 +178,7 @@ function loop() {
   const track = (video.srcObject as MediaStream | null)?.getVideoTracks()[0];
   const videoDebug =
     `video: ${video.videoWidth}x${video.videoHeight} readyState=${video.readyState} paused=${video.paused}\n` +
-    `track: ${track ? `${track.readyState} muted=${track.muted} label=${track.label}` : "없음"}`;
+    `track: ${track ? `${track.readyState} muted=${track.muted} label=${track.label}` : "없음"} (오른쪽 위에서 카메라 바꿀 수 있어요)`;
   debugEl.textContent = `${videoDebug}\nface: ${faceResult.visible ? "visible" : "lost"} faceW=${faceWidthScreenPx.toFixed(0)}px\n${handDebug}`;
 
   flow?.tick(manager.mosquitoes.length);
@@ -169,6 +195,7 @@ startBtn.addEventListener("click", async () => {
     startBtn.disabled = false;
     return;
   }
+  await refreshCameraList();
 
   startBtn.textContent = "인식 모델 불러오는 중...";
   try {
