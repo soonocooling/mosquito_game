@@ -167,7 +167,22 @@ startBtn.addEventListener("click", async () => {
   }
 
   startBtn.textContent = "인식 모델 불러오는 중...";
-  await Promise.all([faceTracker.init(), handTracker.init()]);
+  try {
+    await Promise.all([faceTracker.init(), handTracker.init()]);
+  } catch (err) {
+    // 모델(wasm/.task 파일)을 CDN에서 못 받아오면 여기서 걸린다.
+    // 보통 네트워크 차단(학교/회사 와이파이, 방화벽)이거나 방금 npm install을 안 한 경우다.
+    console.error("[모기게임] 얼굴/손 인식 모델 로딩 실패:", err);
+    showStatus(
+      "인식 모델을 불러오지 못했어요.\n" +
+        "인터넷 연결을 확인하거나(학교·회사 와이파이는 막혀있을 수 있어요),\n" +
+        "브라우저 개발자 도구(F12) → Console 탭의 에러 메시지를 확인해주세요.",
+    );
+    startBtn.style.display = "block";
+    startBtn.textContent = "다시 시도";
+    startBtn.disabled = false;
+    return;
+  }
 
   startBtn.style.display = "none";
   spawnInitial();

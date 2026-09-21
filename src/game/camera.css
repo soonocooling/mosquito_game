@@ -74,6 +74,8 @@
   color: #eee;
   font-family: system-ui, sans-serif;
   text-align: center;
+  white-space: pre-line;
+  line-height: 1.6;
   padding: 24px;
   z-index: 40;
 }
