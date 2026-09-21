@@ -16,6 +16,19 @@ export type MosquitoState =
   | "FLY_OFF"
   | "COOLDOWN";
 
+/** 모기가 문 순간 1건 (product-spec 5.2 BiteEvent). render(B)가 받아 부기를 만든다 */
+export interface BiteEvent {
+  anchorIdx: number; // 물린 랜드마크 인덱스
+  pos: Vec2; // 물린 순간 모기 화면 좌표
+  t: number; // ms
+}
+
+/** product-spec 5.2 GameOutput */
+export interface GameOutput {
+  biteEvents: BiteEvent[]; // 이번 프레임에 발생한 물림. 재사용 배열
+  shake: boolean; // true면 ui가 화면 흔들림 80 ms 재생
+}
+
 export interface FaceState {
   // 랜드마크 인덱스 -> 화면 좌표(px). 예: landmarks[10] = 이마. FaceTracker(F-02)가 채워줌.
   landmarks: Record<number, Vec2>;
