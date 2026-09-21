@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { BiteStore, overshoot } from './bites';
+import { BITE_RADIUS_GROW, BITE_RADIUS_INIT, BITE_STRENGTH_INIT, BITE_STRENGTH_MAX } from './config';
 import type { FaceFrame, Vec2 } from '../shared/types';
 
 function makeFace(x: number, y: number, faceW = 200, rotation = 0): FaceFrame {
@@ -48,8 +49,8 @@ describe('BiteStore', () => {
     const face = makeFace(500, 500);
     for (let i = 0; i < 5; i++) s.ingest([{ anchorIdx: 1, pos: { x: 541, y: 501 }, t: 0 }], face, i * 100);
     expect(s.count).toBe(1);
-    expect(s.bites[0].targetStrength).toBeCloseTo(0.6); // 상한
-    expect(s.bites[0].radius).toBeCloseTo(0.12 * 1.1 ** 4);
+    expect(s.bites[0].targetStrength).toBeCloseTo(BITE_STRENGTH_MAX); // 상한
+    expect(s.bites[0].radius).toBeCloseTo(BITE_RADIUS_INIT * BITE_RADIUS_GROW ** 4);
   });
 
   it('멀리 떨어진 물림은 새 부기가 된다', () => {
@@ -64,9 +65,9 @@ describe('BiteStore', () => {
     const s = new BiteStore();
     s.ingest([{ anchorIdx: 1, pos: { x: 540, y: 500 }, t: 0 }], makeFace(500, 500), 0);
     s.animate(300);
-    expect(s.bites[0].strength).toBeGreaterThan(0.25);
+    expect(s.bites[0].strength).toBeGreaterThan(BITE_STRENGTH_INIT);
     s.animate(600);
-    expect(s.bites[0].strength).toBeCloseTo(0.25);
+    expect(s.bites[0].strength).toBeCloseTo(BITE_STRENGTH_INIT);
   });
 
   it('상한(32)을 넘으면 가장 가까운 두 개를 병합하고, 16으로 내리면 즉시 줄어든다', () => {
@@ -101,7 +102,7 @@ describe('BiteStore', () => {
     expect(s.writeUniforms(face, 1000, 2000, u)).toBe(1);
     expect(u[0]).toBeCloseTo(0.5);
     expect(u[1]).toBeCloseTo(0.5);
-    expect(u[2]).toBeCloseTo((0.12 * 200) / 2000);
-    expect(u[3]).toBeCloseTo(0.25);
+    expect(u[2]).toBeCloseTo((BITE_RADIUS_INIT * 200) / 2000);
+    expect(u[3]).toBeCloseTo(BITE_STRENGTH_INIT);
   });
 });
