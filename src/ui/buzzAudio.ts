@@ -50,6 +50,17 @@ export class BuzzAudio {
     return this.muted;
   }
 
+  /** 음소거 상태를 직접 지정 (Game.setMuted) */
+  setMuted(muted: boolean) {
+    if (this.muted !== muted) this.toggleMute();
+  }
+
+  /** 일시정지 중에는 소리를 멈춘다 (Game.pause) */
+  setPaused(paused: boolean) {
+    if (!this.ctx) return;
+    void (paused ? this.ctx.suspend() : this.ctx.resume()).catch(() => {});
+  }
+
   stop() {
     this.oscillators.forEach((o) => o.stop());
     this.oscillators = [];
