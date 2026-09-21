@@ -1,7 +1,7 @@
 // src/game/mosquitoManager.ts
 // 여러 마리 모기를 관리 (생성 / 매 프레임 갱신 / 렌더용 목록 제공)
 
-import { Mosquito } from "./mosquito";
+import { Mosquito, split } from "./mosquito";
 import type { Vec2, FaceState, GameOutput } from "./types";
 
 export class MosquitoManager {
@@ -31,6 +31,16 @@ export class MosquitoManager {
 
   removeById(id: number) {
     this.mosquitoes = this.mosquitoes.filter((m) => m.id !== id);
+  }
+
+  /** F-10: 잡힌 모기 한 마리를 같은 자리의 새 모기 두 마리로 교체합니다. */
+  splitById(id: number, faceWidthPx: number, now: number): boolean {
+    const index = this.mosquitoes.findIndex((m) => m.id === id);
+    if (index < 0 || this.mosquitoes[index].isInvulnerable) return false;
+    const caught = this.mosquitoes[index];
+    const children = split(caught.position, faceWidthPx, now);
+    this.mosquitoes.splice(index, 1, ...children);
+    return true;
   }
 
   /**

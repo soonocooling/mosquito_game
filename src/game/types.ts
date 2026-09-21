@@ -34,4 +34,5 @@ export interface HandState {
   palmR: number;
   velocity: Vec2; // px/s
   grip: number; // 값이 작을수록 움켜쥔 상태
+  t: number; // 실제 손 검출 시각(ms). 같은 t는 새 검출이 아님
 }

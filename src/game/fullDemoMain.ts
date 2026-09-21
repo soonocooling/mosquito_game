@@ -7,8 +7,9 @@ import { FaceTracker } from "./faceTracking";
 import { HandTracker, type HandTrackResult } from "./handTracking";
 import { MosquitoManager } from "./mosquitoManager";
 import { drawMosquitoSprite } from "./mosquitoSprite";
+import { SwatDetector } from "./swat";
 import { GameFlow } from "../ui/gameFlow";
-import type { Vec2 } from "./types";
+import type { HandState, Vec2 } from "./types";
 
 const app = document.getElementById("app") as HTMLDivElement;
 const startBtn = document.getElementById("start-btn") as HTMLButtonElement;
@@ -108,6 +109,7 @@ const camera = new Camera(video, {
 const faceTracker = new FaceTracker();
 const handTracker = new HandTracker();
 const manager = new MosquitoManager();
+const swatDetector = new SwatDetector();
 
 let flow: GameFlow | null = null;
 let running = false;
@@ -144,6 +146,21 @@ function loop() {
   const faceWidthScreenPx = camera.mapLength(faceResult.faceW, screenW, screenH);
 
   manager.update(screenLandmarks, faceWidthScreenPx, faceResult.visible);
+  const screenHands: HandState[] = handResults.map((hand) => ({
+    handedness: hand.handedness,
+    palmCenter: camera.mapPoint(hand.palmCenter, screenW, screenH),
+    palmR: camera.mapLength(hand.palmR, screenW, screenH),
+    velocity: {
+      x: camera.mapLength(hand.velocity.x, screenW, screenH),
+      y: camera.mapLength(hand.velocity.y, screenW, screenH),
+    },
+    grip: hand.grip,
+    t: hand.t,
+  }));
+  const caughtIds = swatDetector.detect(screenHands, manager.mosquitoes, faceWidthScreenPx);
+  for (const id of caughtIds) {
+    if (manager.splitById(id, faceWidthScreenPx, now)) flow?.onCaught();
+  }
   camera.checkDistanceHint(faceWidthScreenPx, screenW);
 
   if (faceResult.justLost) {

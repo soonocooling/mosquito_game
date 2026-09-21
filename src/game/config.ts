@@ -26,3 +26,9 @@ export const COOLDOWN_DIST_MAX = 2.5;
 export const COOLDOWN_SPEED_RATIO = 0.6;
 /** 분열 직후 무적 시간 (F-10) */
 export const SPAWNING_MS = 600;
+
+// ---- F-08 잡기 / F-10 분열 ----
+/** 손 스윙으로 인정하는 최소 속도 (faceW/s) */
+export const SWING_MIN_SPEED_FACEW = 1.5;
+/** 분열 직후 두 모기가 튕겨 나가는 속도 (faceW/s) */
+export const SPLIT_SPEED_FACEW = 2;

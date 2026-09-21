@@ -25,6 +25,7 @@ export interface HandTrackResult {
   palmR: number; // |p0 - p9| * 0.8
   velocity: Vec2; // 비디오-픽셀 / s
   grip: number; // 손끝~손목 평균 거리 / |p0 - p9| — 값이 작을수록 움켜쥔 상태
+  t: number; // 실제 검출 시각(ms)
 }
 
 export class HandTracker {
@@ -104,7 +105,7 @@ export class HandTracker {
       }
 
       seenKeys.add(handedness);
-      out.push({ handedness, palmCenter, palmR, velocity, grip });
+      out.push({ handedness, palmCenter, palmR, velocity, grip, t: timestampMs });
     }
 
     // 화면에서 사라진 손의 이력은 정리 (재등장 시 속도 계산이 이전 위치로 튀지 않도록)

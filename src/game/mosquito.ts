@@ -17,6 +17,7 @@ import {
   FLY_OFF_SPEED,
   LAND_DIST,
   LANDED_MS,
+  SPLIT_SPEED_FACEW,
   SPAWNING_MS,
 } from "./config";
 import type { Vec2, FaceState, MosquitoState, BiteEvent } from "./types";
@@ -45,6 +46,8 @@ export class Mosquito {
   wingFrame: 0 | 1 = 0;
   /** -1은 왼쪽, 1은 오른쪽. 속도가 거의 0일 때는 마지막 방향을 유지합니다. */
   facingX: -1 | 1 = -1;
+  /** F-10: 이 시각 전에는 잡기 판정에서 제외합니다. */
+  invulnUntil = 0;
   private wingTimer = 0;
   /** 현재 상태에 머문 시간 (s) */
   private stateTimer = 0;
@@ -54,11 +57,12 @@ export class Mosquito {
   private cooldownAngle = 0;
   private cooldownDist = 0;
 
-  constructor(spawnPos: Vec2, state: MosquitoState = "APPROACH") {
+  constructor(spawnPos: Vec2, state: MosquitoState = "APPROACH", now = performance.now()) {
     this.id = idCounter++;
     this.position = { ...spawnPos };
     this.targetLandmarkIndex = randomAnchor();
     this.noiseSeed = Math.random() * 1000;
+    if (state === "SPAWNING") this.invulnUntil = now + SPAWNING_MS;
     this.enter(state);
   }
 
@@ -280,4 +284,26 @@ export class Mosquito {
     const wobble = noise1D(performance.now() / 300, this.noiseSeed) * wobbleAmp;
     this.position.x += wobble * dt * 2;
   }
+}
+
+/**
+ * F-10: 죽은 위치에서 같은 축의 반대 방향으로 두 마리를 생성합니다.
+ * axisRad를 넘기면 난수를 제거할 수 있어 단위 테스트에서도 같은 결과를 재현할 수 있습니다.
+ */
+export function split(
+  pos: Vec2,
+  faceWidthPx: number,
+  now: number,
+  axisRad = Math.random() * Math.PI * 2,
+): [Mosquito, Mosquito] {
+  const speed = SPLIT_SPEED_FACEW * faceWidthPx;
+  const velocityX = Math.cos(axisRad) * speed;
+  const velocityY = Math.sin(axisRad) * speed;
+  const first = new Mosquito(pos, "SPAWNING", now);
+  const second = new Mosquito(pos, "SPAWNING", now);
+  first.velocity.x = velocityX;
+  first.velocity.y = velocityY;
+  second.velocity.x = -velocityX;
+  second.velocity.y = -velocityY;
+  return [first, second];
 }
