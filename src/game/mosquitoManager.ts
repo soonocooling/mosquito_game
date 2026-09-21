@@ -1,7 +1,6 @@
 // src/game/mosquitoManager.ts
 // 여러 마리 모기를 관리 (생성 / 매 프레임 갱신 / 렌더용 목록 제공)
 
-import { makeHalfImmortal } from "./immortal";
 import { Mosquito, split } from "./mosquito";
 import type { Vec2, FaceState, GameOutput } from "./types";
 
@@ -30,6 +29,33 @@ export class MosquitoManager {
     this.mosquitoes.push(new Mosquito(pos, state));
   }
 
+  /**
+   * 모기를 화면 안에 가둔다: 가장자리에서 margin(px) 안쪽으로 밀어 넣고, 바깥으로 향하던 속도는 없앤다.
+   * 화면 밖에서 태어난 모기(spawnFromEdge)도 첫 프레임에 가장자리로 들어온다.
+   */
+  confine(screenW: number, screenH: number, margin: number) {
+    const minX = margin;
+    const minY = margin;
+    const maxX = Math.max(margin, screenW - margin);
+    const maxY = Math.max(margin, screenH - margin);
+    for (const m of this.mosquitoes) {
+      if (m.position.x < minX) {
+        m.position.x = minX;
+        if (m.velocity.x < 0) m.velocity.x = 0;
+      } else if (m.position.x > maxX) {
+        m.position.x = maxX;
+        if (m.velocity.x > 0) m.velocity.x = 0;
+      }
+      if (m.position.y < minY) {
+        m.position.y = minY;
+        if (m.velocity.y < 0) m.velocity.y = 0;
+      } else if (m.position.y > maxY) {
+        m.position.y = maxY;
+        if (m.velocity.y > 0) m.velocity.y = 0;
+      }
+    }
+  }
+
   removeById(id: number) {
     this.mosquitoes = this.mosquitoes.filter((m) => m.id !== id);
   }
@@ -40,8 +66,7 @@ export class MosquitoManager {
     if (index < 0 || this.mosquitoes[index].isInvulnerable) return false;
     const caught = this.mosquitoes[index];
     const children = split(caught.position, faceWidthPx, now);
-    // 팀장 결정: 분열로 생긴 두 마리 중 한 마리는 평생 무적. 모기 수 상한은 없다
-    makeHalfImmortal(children);
+    // 모기 수 상한은 없다 (팀장 결정)
     this.mosquitoes.splice(index, 1, ...children);
     return true;
   }
