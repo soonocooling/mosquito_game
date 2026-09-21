@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>모기 테스트 (F-04 / F-11)</title>
+    <style>
+      html, body { margin: 0; height: 100%; background: #1a1a1a; overflow: hidden; }
+      #app { position: relative; width: 100vw; height: 100vh; }
+      #game-canvas { display: block; background: #222; width: 100%; height: 100%; }
+      #start-btn {
+        position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+        padding: 14px 28px; font-size: 18px; border-radius: 999px; border: none;
+        background: #ffcc33; z-index: 20;
+      }
+      #hint {
+        position: fixed; bottom: 70px; left: 0; right: 0; text-align: center;
+        color: #aaa; font-family: system-ui, sans-serif; font-size: 13px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <div id="hint">마우스(또는 손가락)를 움직이면 얼굴 대신 그 위치를 모기가 쫓아갑니다</div>
+    <script type="module" src="/src/game/demoMain.ts"></script>
+  </body>
+</html>
