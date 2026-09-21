@@ -1,0 +1,61 @@
+// src/game/mosquitoManager.ts
+// 여러 마리 모기를 관리 (생성 / 매 프레임 갱신 / 렌더용 목록 제공)
+
+import { Mosquito } from "./mosquito";
+import type { Vec2, FaceState } from "./types";
+
+export class MosquitoManager {
+  mosquitoes: Mosquito[] = [];
+  private prevLandmarkPos: Vec2 | null = null;
+  private prevTime = performance.now();
+
+  /** F-11: 시작 시 화면 밖 랜덤 위치에서 모기 1마리 생성 */
+  spawnFromEdge(screenW: number, screenH: number) {
+    const edge = Math.floor(Math.random() * 4);
+    let pos: Vec2;
+    switch (edge) {
+      case 0: pos = { x: Math.random() * screenW, y: -20 }; break; // 위
+      case 1: pos = { x: screenW + 20, y: Math.random() * screenH }; break; // 오른쪽
+      case 2: pos = { x: Math.random() * screenW, y: screenH + 20 }; break; // 아래
+      default: pos = { x: -20, y: Math.random() * screenH }; break; // 왼쪽
+    }
+    this.mosquitoes.push(new Mosquito(pos));
+  }
+
+  /** F-10(분열) 등에서 특정 위치에 모기를 추가할 때 사용 */
+  spawnAt(pos: Vec2, state?: "SPAWNING" | "APPROACH") {
+    this.mosquitoes.push(new Mosquito(pos, state));
+  }
+
+  removeById(id: number) {
+    this.mosquitoes = this.mosquitoes.filter((m) => m.id !== id);
+  }
+
+  /**
+   * 매 프레임 호출.
+   * rawLandmarks: perception 모듈에서 받은 이번 프레임 랜드마크 좌표(px)
+   * faceWidthPx: perception 모듈에서 받은 얼굴 폭(px)
+   * visible: 얼굴이 화면에 보이는지 (F-02, 안 보이면 모기는 대기)
+   */
+  update(rawLandmarks: Record<number, Vec2>, faceWidthPx: number, visible = true) {
+    const now = performance.now();
+    const dt = Math.min((now - this.prevTime) / 1000, 0.05);
+    this.prevTime = now;
+
+    // 얼굴 속도(px/s) 추정: 코끝(1번) 랜드마크 이동량 기준
+    let velocity: Vec2 = { x: 0, y: 0 };
+    const ref = rawLandmarks[1] ?? Object.values(rawLandmarks)[0];
+    if (this.prevLandmarkPos && ref && dt > 0) {
+      velocity = {
+        x: (ref.x - this.prevLandmarkPos.x) / dt,
+        y: (ref.y - this.prevLandmarkPos.y) / dt,
+      };
+    }
+    this.prevLandmarkPos = ref ? { ...ref } : this.prevLandmarkPos;
+
+    const face: FaceState = { landmarks: rawLandmarks, faceWidthPx, velocity, visible };
+    for (const m of this.mosquitoes) {
+      m.update(dt, face, this.mosquitoes);
+    }
+  }
+}
