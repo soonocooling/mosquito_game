@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>부기 렌더러 데모 (F-07)</title>
+    <style>
+      html, body { margin: 0; height: 100%; background: #111; overflow: hidden; touch-action: none; }
+      #gl, #overlay { position: fixed; inset: 0; width: 100vw; height: 100dvh; display: block; }
+      #video { position: fixed; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+      #panel {
+        position: fixed; left: 8px; top: 8px; z-index: 2; padding: 6px 10px; border-radius: 6px;
+        background: rgba(0, 0, 0, 0.6); color: #eee; font: 12px/1.5 ui-monospace, monospace; white-space: pre;
+      }
+      #shot {
+        position: fixed; right: 8px; bottom: 8px; z-index: 2; width: 30vw; max-width: 200px;
+        border: 2px solid #fff; display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <video id="video" playsinline muted autoplay></video>
+    <canvas id="gl"></canvas>
+    <canvas id="overlay"></canvas>
+    <div id="panel"></div>
+    <img id="shot" alt="capture" />
+    <script type="module" src="./demo.ts"></script>
+  </body>
+</html>
