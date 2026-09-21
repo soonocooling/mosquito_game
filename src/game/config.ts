@@ -74,3 +74,7 @@ export const BLOOD_COLOR = "#b3001b";
 /** "찰싹" 효과음: 화이트노이즈 길이·음량 */
 export const SLAP_MS = 60;
 export const SLAP_GAIN = 0.5;
+
+// ---- F-10 분열 ----
+/** 분열 직후 두 모기가 튕겨 나가는 속도 (faceW/s) */
+export const SPLIT_SPEED_FACEW = 2;

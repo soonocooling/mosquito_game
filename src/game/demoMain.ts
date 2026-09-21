@@ -73,16 +73,14 @@ startBtn.addEventListener("click", () => {
   startBtn.style.display = "none";
 });
 
-// 모기를 직접 클릭하면 잡힌 것처럼 없애서 F-11 onCaught 연동도 확인 가능
+// 모바일 탭 대체 입력: 잡힌 자리에서 F-10 분열까지 같은 경로로 확인합니다.
 canvas.addEventListener("click", (e) => {
   const rect = canvas.getBoundingClientRect();
   const clickPos = { x: e.clientX - rect.left, y: e.clientY - rect.top };
   for (const m of manager.mosquitoes) {
     const size = m.getSize(FAKE_FACE_WIDTH);
     if (Math.hypot(m.position.x - clickPos.x, m.position.y - clickPos.y) < size) {
-      manager.removeById(m.id);
-      flow.onCaught();
-      manager.spawnFromEdge(canvas.width, canvas.height); // 테스트용으로 하나 다시 보충
+      if (manager.splitById(m.id, FAKE_FACE_WIDTH, performance.now())) flow.onCaught();
       break;
     }
   }

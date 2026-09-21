@@ -1,6 +1,6 @@
 // src/game/index.ts
 // C의 Game 구현 (spec 5.2). MosquitoManager(F-04, F-06), 잡기(F-08), GameFlow(F-11 HUD·소리)를 main.ts에 연결한다.
-// 처치하면 피 튀김·"찰싹"(F-09). F-10(분열)은 아직 없음 — kills 목록(처치 위치)을 받아서 붙이면 된다.
+// 처치하면 피 튀김·"찰싹"(F-09) 뒤 잡힌 위치에서 두 마리로 분열한다(F-10).
 
 import type { FrameInput, Game, GameOutput, GameStats, Quality, Vec2 } from "../shared/types";
 import { GameFlow } from "../ui/gameFlow";
@@ -76,7 +76,6 @@ export class GameImpl implements Game {
     // F-08: 무는 판정보다 먼저 — LANDED 중에 잡히면 물림 없이 죽는다
     this.history.update(input.hands);
     this.swatter.judge(this.manager.mosquitoes, input, this.history, this.handsEnabled, (m, kind) => this.kill(m, kind, input.now));
-    this.refillIfEmpty();
 
     // FaceFrame.landmarks(배열)는 인덱스로 접근하는 Record<number, Vec2>와 호환된다
     const out = this.manager.update(face.landmarks as Record<number, Vec2>, face.faceW, face.visible);
@@ -91,15 +90,9 @@ export class GameImpl implements Game {
     this.kills.push({ pos: { x: m.position.x, y: m.position.y }, kind, t: now });
     this.blood.burst(m.position, this.faceW || 100, now);
     this.flow.playSlap(SLAP_MS, SLAP_GAIN);
-    this.manager.removeById(m.id);
+    this.manager.splitById(m.id, this.faceW || 100, now, this.mosquitoCap);
     this.stats.kills++;
     this.flow.onCaught();
-  }
-
-  /** 임시: F-10(분열) 전까지는 다 잡으면 화면 밖에서 1마리를 새로 보낸다 */
-  private refillIfEmpty(): void {
-    if (this.manager.mosquitoes.length > 0) return;
-    this.manager.spawnFromEdge(this.viewport.w || innerWidth, this.viewport.h || innerHeight);
   }
 
   drawOverlay(ctx: CanvasRenderingContext2D): void {
@@ -109,7 +102,6 @@ export class GameImpl implements Game {
   }
 
   setQuality(q: Quality): void {
-    // F-10 분열이 들어오면 이 상한을 넘지 않게 한다
     this.mosquitoCap = q.mosquitoCap;
     this.handsEnabled = q.handsEnabled;
   }
