@@ -6,7 +6,21 @@
 
 import { MosquitoManager } from "./mosquitoManager";
 import { GameFlow } from "../ui/gameFlow";
-import type { Vec2 } from "./types";
+import { ANCHOR_IDS } from "./config";
+import type { MosquitoState, Vec2 } from "./types";
+
+// F-06 상태 확인용 색 (LANDED = 빨강: 곧 문다)
+const STATE_COLOR: Record<MosquitoState, string> = {
+  SPAWNING: "#88f",
+  APPROACH: "#333",
+  LANDED: "#e33",
+  BITE: "#f00",
+  FLY_OFF: "#fa0",
+  COOLDOWN: "#777",
+};
+const SHAKE_MS = 80;
+const SHAKE_PX = 3;
+let shakeUntil = 0;
 
 const app = document.querySelector<HTMLDivElement>("#app")!;
 
@@ -76,21 +90,29 @@ canvas.addEventListener("click", (e) => {
 function loop() {
   if (flow.isRunning()) {
     const fakeLandmarks: Record<number, Vec2> = {};
-    for (const idx of [10, 1, 152, 50, 280, 159, 386, 0]) {
+    for (const idx of ANCHOR_IDS) {
       fakeLandmarks[idx] = pointer;
     }
-    manager.update(fakeLandmarks, FAKE_FACE_WIDTH, true);
+    const out = manager.update(fakeLandmarks, FAKE_FACE_WIDTH, true);
+    for (let i = 0; i < out.biteEvents.length; i++) flow.onBite();
+    if (out.shake) shakeUntil = performance.now() + SHAKE_MS;
     flow.tick(manager.mosquitoes.length);
   }
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   for (const m of manager.mosquitoes) {
     const size = m.getSize(FAKE_FACE_WIDTH);
-    ctx.fillStyle = m.wingFrame === 0 ? "#333" : "#555";
+    ctx.fillStyle = STATE_COLOR[m.state];
+    ctx.globalAlpha = m.wingFrame === 0 ? 1 : 0.8;
     ctx.beginPath();
     ctx.ellipse(m.position.x, m.position.y, size, size * 0.6, 0, 0, Math.PI * 2);
     ctx.fill();
   }
+  ctx.globalAlpha = 1;
+
+  // F-06: 물린 순간 화면 흔들림 80ms
+  canvas.style.transform =
+    performance.now() < shakeUntil ? `translate(${Math.random() < 0.5 ? -SHAKE_PX : SHAKE_PX}px, 0)` : "";
 
   requestAnimationFrame(loop);
 }

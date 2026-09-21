@@ -2,10 +2,12 @@
 // 여러 마리 모기를 관리 (생성 / 매 프레임 갱신 / 렌더용 목록 제공)
 
 import { Mosquito } from "./mosquito";
-import type { Vec2, FaceState } from "./types";
+import type { Vec2, FaceState, GameOutput } from "./types";
 
 export class MosquitoManager {
   mosquitoes: Mosquito[] = [];
+  /** F-06: 매 프레임 update가 채워서 반환한다 (배열은 재사용) */
+  readonly output: GameOutput = { biteEvents: [], shake: false };
   private prevLandmarkPos: Vec2 | null = null;
   private prevTime = performance.now();
 
@@ -36,8 +38,9 @@ export class MosquitoManager {
    * rawLandmarks: perception 모듈에서 받은 이번 프레임 랜드마크 좌표(px)
    * faceWidthPx: perception 모듈에서 받은 얼굴 폭(px)
    * visible: 얼굴이 화면에 보이는지 (F-02, 안 보이면 모기는 대기)
+   * 반환: 이번 프레임의 물림 이벤트와 화면 흔들림 여부 (F-06). render(B)의 draw에 biteEvents를 넘긴다
    */
-  update(rawLandmarks: Record<number, Vec2>, faceWidthPx: number, visible = true) {
+  update(rawLandmarks: Record<number, Vec2>, faceWidthPx: number, visible = true): GameOutput {
     const now = performance.now();
     const dt = Math.min((now - this.prevTime) / 1000, 0.05);
     this.prevTime = now;
@@ -54,8 +57,12 @@ export class MosquitoManager {
     this.prevLandmarkPos = ref ? { ...ref } : this.prevLandmarkPos;
 
     const face: FaceState = { landmarks: rawLandmarks, faceWidthPx, velocity, visible };
+    const out = this.output;
+    out.biteEvents.length = 0;
     for (const m of this.mosquitoes) {
-      m.update(dt, face, this.mosquitoes);
+      m.update(dt, face, this.mosquitoes, out.biteEvents);
     }
+    out.shake = out.biteEvents.length > 0;
+    return out;
   }
 }
