@@ -5,11 +5,12 @@
 // main.ts는 건드리지 않았고, /mosquito-test.html 로 접속해야 이 파일이 실행됩니다.
 
 import { MosquitoManager } from "./mosquitoManager";
+import { drawMosquitoSprite } from "./mosquitoSprite";
 import { GameFlow } from "../ui/gameFlow";
 import { ANCHOR_IDS } from "./config";
 import type { MosquitoState, Vec2 } from "./types";
 
-// F-06 상태 확인용 색 (LANDED = 빨강: 곧 문다)
+// F-06 상태 확인용 링 색 (LANDED = 빨강: 곧 문다)
 const STATE_COLOR: Record<MosquitoState, string> = {
   SPAWNING: "#88f",
   APPROACH: "#333",
@@ -102,13 +103,14 @@ function loop() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   for (const m of manager.mosquitoes) {
     const size = m.getSize(FAKE_FACE_WIDTH);
-    ctx.fillStyle = STATE_COLOR[m.state];
-    ctx.globalAlpha = m.wingFrame === 0 ? 1 : 0.8;
+    drawMosquitoSprite(ctx, m, size);
+    // F-06 상태 표시 링
+    ctx.strokeStyle = STATE_COLOR[m.state];
+    ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.ellipse(m.position.x, m.position.y, size, size * 0.6, 0, 0, Math.PI * 2);
-    ctx.fill();
+    ctx.arc(m.position.x, m.position.y, size * 1.6, 0, Math.PI * 2);
+    ctx.stroke();
   }
-  ctx.globalAlpha = 1;
 
   // F-06: 물린 순간 화면 흔들림 80ms
   canvas.style.transform =

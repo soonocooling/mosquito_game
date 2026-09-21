@@ -6,6 +6,7 @@ import { Camera, type DistanceHint } from "./camera";
 import { FaceTracker } from "./faceTracking";
 import { HandTracker, type HandTrackResult } from "./handTracking";
 import { MosquitoManager } from "./mosquitoManager";
+import { drawMosquitoSprite } from "./mosquitoSprite";
 import { GameFlow } from "../ui/gameFlow";
 import type { Vec2 } from "./types";
 
@@ -153,10 +154,7 @@ function loop() {
 
   for (const m of manager.mosquitoes) {
     const size = m.getSize(faceWidthScreenPx || 60);
-    ctx.fillStyle = m.wingFrame === 0 ? "#333" : "#555";
-    ctx.beginPath();
-    ctx.ellipse(m.position.x, m.position.y, size, size * 0.6, 0, 0, Math.PI * 2);
-    ctx.fill();
+    drawMosquitoSprite(ctx, m, size);
   }
 
   for (const h of handResults) {

@@ -43,6 +43,8 @@ export class Mosquito {
   targetLandmarkIndex: number;
   noiseSeed: number;
   wingFrame: 0 | 1 = 0;
+  /** -1은 왼쪽, 1은 오른쪽. 속도가 거의 0일 때는 마지막 방향을 유지합니다. */
+  facingX: -1 | 1 = -1;
   private wingTimer = 0;
   /** 현재 상태에 머문 시간 (s) */
   private stateTimer = 0;
@@ -265,6 +267,11 @@ export class Mosquito {
 
   /** 속도만큼 이동 + 비행감 흔들림 */
   private move(dt: number, face: FaceState) {
+    // 아주 작은 좌우 흔들림에는 방향이 깜빡이지 않도록 임계값을 둡니다.
+    const facingThreshold = (face.faceWidthPx || 1) * 0.03;
+    if (this.velocity.x > facingThreshold) this.facingX = 1;
+    else if (this.velocity.x < -facingThreshold) this.facingX = -1;
+
     this.position.x += this.velocity.x * dt;
     this.position.y += this.velocity.y * dt;
 
