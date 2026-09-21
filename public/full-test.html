@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>모기 게임 실전 테스트 (F-01~F-04, F-11)</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        background: #000;
+        overflow: hidden;
+        overscroll-behavior: none;
+      }
+      #start-btn {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        padding: 16px 32px;
+        font-size: 18px;
+        border-radius: 999px;
+        border: none;
+        background: #ffcc33;
+        z-index: 60;
+        font-family: system-ui, sans-serif;
+      }
+      #debug {
+        position: fixed;
+        left: 8px;
+        bottom: calc(env(safe-area-inset-bottom, 0px) + 8px);
+        color: #9f9;
+        font: 11px/1.4 monospace;
+        background: rgba(0, 0, 0, 0.4);
+        padding: 6px 8px;
+        border-radius: 6px;
+        z-index: 20;
+        white-space: pre;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <button id="start-btn" type="button">시작 (카메라 허용 필요)</button>
+    <div id="debug"></div>
+    <script type="module" src="/src/game/fullDemoMain.ts"></script>
+  </body>
+</html>
