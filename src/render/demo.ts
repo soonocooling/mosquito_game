@@ -9,7 +9,7 @@
 
 import { rotate } from './bites';
 import { createRenderer } from './gl';
-import type { BiteEvent, FaceFrame, Quality, Vec2 } from './types';
+import type { BiteEvent, FaceFrame, Quality, Vec2 } from '../shared/types';
 
 const ANCHOR = 1; // 코끝
 const LANDMARK_COUNT = 478;

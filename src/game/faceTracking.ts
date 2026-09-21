@@ -8,9 +8,8 @@ import {
 import { OneEuroFilter2D } from "./oneEuroFilter";
 import type { Vec2 } from "./types";
 
-const WASM_URL = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.35/wasm";
-const FACE_MODEL_URL =
-  "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task";
+const WASM_URL = "/wasm"; // postinstall이 node_modules에서 복사 (product-spec 9.1)
+const FACE_MODEL_URL = "/models/face_landmarker.task";
 
 // 좌/우 광대 랜드마크 (MediaPipe Face Mesh 기준)
 const RIGHT_CHEEK_IDX = 234;

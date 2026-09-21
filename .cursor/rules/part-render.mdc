@@ -13,4 +13,4 @@ alwaysApply: false
 - 튜닝 수치(반경·세기·병합·애니메이션·색)는 src/render/config.ts에만 둔다.
 - 매 프레임 호출되는 draw 경로에서는 객체·배열을 새로 만들지 않는다 (GC 끊김 방지).
 - 순수 로직(bites.ts)은 DOM·WebGL에 의존하지 않게 유지한다.
-- src/render/types.ts, faceAdapter.ts는 임시 파일이다. src/shared/types.ts와 perception의 FaceFrame이 준비되면 삭제한다.
+- 타입은 src/shared/types.ts 에서 import 한다.

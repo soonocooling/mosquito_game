@@ -1,0 +1,12 @@
+---
+description: 인식·플랫폼 파트(A) 규칙
+globs: src/perception/**, src/platform/**, src/main.ts, index.html
+alwaysApply: false
+---
+- 이 작업에서는 src/perception/, src/platform/, src/main.ts, index.html 만 생성·수정한다.
+- 정규화 좌표(0~1) → 화면 px 변환은 src/perception/mapper.ts 하나에서만 한다. 정규화 좌표는 perception/ 밖으로 내보내지 않는다.
+- CSS transform: scaleX(-1)을 쓰지 않는다. 거울 반전은 mapper(오버레이)와 셰이더(GL)에서 각각 한 번씩만.
+- detectForVideo 타임스탬프는 performance.now()만 쓰고, video.currentTime이 직전과 같으면 호출하지 않는다.
+- 모델·WASM은 /models, /wasm 로컬 경로에서 읽는다. 모델을 바꾸면 폴더명 버전을 올린다.
+- FaceFrame.landmarks 배열과 Vec2 객체는 한 번 만들어 재사용한다.
+- getUserMedia·video.play·AudioContext는 시작 버튼 핸들러 한 제스처 안에서 호출한다 (iOS).
