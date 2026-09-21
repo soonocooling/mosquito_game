@@ -1,11 +1,21 @@
 // src/game/index.ts
-// C의 Game 구현 (spec 5.2). 기존 MosquitoManager(F-04, F-06)와 GameFlow(F-11 HUD·소리)를 main.ts에 연결한다.
-// F-08(잡기)·F-10(분열)은 아직 없음 — 들어오면 update 안에서 input.hands / input.taps 로 판정한다.
+// C의 Game 구현 (spec 5.2). MosquitoManager(F-04, F-06), 잡기(F-08), GameFlow(F-11 HUD·소리)를 main.ts에 연결한다.
+// F-09(피 튀김)·F-10(분열)은 아직 없음 — kills 목록(처치 위치)을 받아서 붙이면 된다.
 
 import type { FrameInput, Game, GameOutput, GameStats, Quality, Vec2 } from "../shared/types";
 import { GameFlow } from "../ui/gameFlow";
+import { HandHistory } from "./hands";
+import type { Mosquito } from "./mosquito";
 import { MosquitoManager } from "./mosquitoManager";
 import { drawMosquitoSprite } from "./mosquitoSprite";
+import { Swatter, type SwatKind } from "./swat";
+
+/** 처치 1건 (F-09 피 튀김·F-10 분열 입력) */
+export interface Kill {
+  pos: Vec2;
+  kind: SwatKind;
+  t: number;
+}
 
 const EMPTY_OUTPUT: GameOutput = { biteEvents: [], shake: false };
 
@@ -16,6 +26,11 @@ export class GameImpl implements Game {
   private viewport = { w: 0, h: 0 };
   private paused = false;
   private mosquitoCap = Infinity;
+  private handsEnabled = true;
+  private readonly history = new HandHistory();
+  private readonly swatter = new Swatter();
+  /** 이번 프레임의 처치 목록 (재사용 배열) */
+  readonly kills: Kill[] = [];
   readonly stats: GameStats = { bites: 0, kills: 0, mosquitoCount: 0, startedAt: 0 };
 
   /**
@@ -34,6 +49,8 @@ export class GameImpl implements Game {
   /** 첫 게임 시작과 다시 하기: 모기 1마리가 화면 밖에서 날아온다 (F-11) */
   reset(): void {
     this.manager.mosquitoes.length = 0;
+    this.history.clear();
+    this.swatter.reset();
     this.manager.spawnFromEdge(this.viewport.w || innerWidth, this.viewport.h || innerHeight);
     this.flow.resetStats();
     this.stats.bites = 0;
@@ -44,9 +61,16 @@ export class GameImpl implements Game {
 
   update(input: FrameInput): GameOutput {
     this.viewport = input.viewport;
+    this.kills.length = 0;
     if (this.paused) return EMPTY_OUTPUT;
     const face = input.face;
     this.faceW = face.faceW;
+
+    // F-08: 무는 판정보다 먼저 — LANDED 중에 잡히면 물림 없이 죽는다
+    this.history.update(input.hands);
+    this.swatter.judge(this.manager.mosquitoes, input, this.history, this.handsEnabled, (m, kind) => this.kill(m, kind, input.now));
+    this.refillIfEmpty();
+
     // FaceFrame.landmarks(배열)는 인덱스로 접근하는 Record<number, Vec2>와 호환된다
     const out = this.manager.update(face.landmarks as Record<number, Vec2>, face.faceW, face.visible);
     for (let i = 0; i < out.biteEvents.length; i++) this.flow.onBite();
@@ -54,6 +78,19 @@ export class GameImpl implements Game {
     this.stats.mosquitoCount = this.manager.mosquitoes.length;
     this.flow.tick(this.manager.mosquitoes.length);
     return out;
+  }
+
+  private kill(m: Mosquito, kind: SwatKind, now: number): void {
+    this.kills.push({ pos: { x: m.position.x, y: m.position.y }, kind, t: now });
+    this.manager.removeById(m.id);
+    this.stats.kills++;
+    this.flow.onCaught();
+  }
+
+  /** 임시: F-10(분열) 전까지는 다 잡으면 화면 밖에서 1마리를 새로 보낸다 */
+  private refillIfEmpty(): void {
+    if (this.manager.mosquitoes.length > 0) return;
+    this.manager.spawnFromEdge(this.viewport.w || innerWidth, this.viewport.h || innerHeight);
   }
 
   drawOverlay(ctx: CanvasRenderingContext2D): void {
@@ -64,6 +101,7 @@ export class GameImpl implements Game {
   setQuality(q: Quality): void {
     // F-10 분열이 들어오면 이 상한을 넘지 않게 한다
     this.mosquitoCap = q.mosquitoCap;
+    this.handsEnabled = q.handsEnabled;
   }
 
   get cap(): number {
@@ -77,6 +115,7 @@ export class GameImpl implements Game {
   pause(p: boolean): void {
     this.paused = p;
     this.flow.setPaused(p);
+    if (p) this.history.clear(); // 손 이력 초기화 (F-08)
   }
 
   /** 결과 화면 표시용 (F-12) */

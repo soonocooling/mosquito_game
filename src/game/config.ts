@@ -26,3 +26,25 @@ export const COOLDOWN_DIST_MAX = 2.5;
 export const COOLDOWN_SPEED_RATIO = 0.6;
 /** 분열 직후 무적 시간 (F-10) */
 export const SPAWNING_MS = 600;
+
+// ---- F-08 잡기 ----
+/** 모기 히트박스 반경 (faceW). 그리기 크기 getSize와 같은 값 */
+export const MOSQ_HIT_R = 0.06;
+/** 손 이력 보관 시간 */
+export const HAND_HISTORY_MS = 300;
+/** 스윙: 손 속도가 이 값(faceW/s)을 넘어야 한다 */
+export const SWING_SPEED = 1.5;
+/** 박수: 이 시간 안에 두 손바닥 거리가 CLAP_SHRINK 비율 이하로 줄고 CLAP_CLOSE(faceW) 안으로 들어오면 */
+export const CLAP_WINDOW_MS = 150;
+export const CLAP_SHRINK = 0.5;
+export const CLAP_CLOSE = 0.6;
+/** 박수: 두 손바닥을 잇는 선분과 모기 거리 (faceW) */
+export const CLAP_HIT = 0.3;
+/** 움켜쥐기: 이 시간 안에 grip이 GRIP_OPEN 이상 → GRIP_CLOSED 미만 */
+export const GRAB_WINDOW_MS = 200;
+export const GRIP_OPEN = 1.8;
+export const GRIP_CLOSED = 1.1;
+/** 박수·움켜쥐기 발동 후 재발동 금지 시간 */
+export const SWAT_COOLDOWN_MS = 200;
+/** 클릭(탭) 반경 (faceW) */
+export const TAP_R = 0.12;

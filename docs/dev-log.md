@@ -25,6 +25,7 @@
 | 6 | README에 배포 정보 추가 | #9 |
 | 7 | 원래 A 담당자가 작업하지 않아 팀장이 **A 작업** 인수. Day 0 기반: `src/shared/types.ts`(스펙 5.2, 3인 동의 생략), strict, Vite·Vercel 설정, 모델·WASM 로컬화, Vitest, PR 템플릿, Cursor 규칙 | #10 |
 | 8 | **게임 연결**: 인식 모듈(`src/perception/`)을 스펙 형식으로 재구성, `src/main.ts` 루프로 카메라 → 인식 → 모기 → 부기 → HUD → 결과 연결. 폰 관련 코드 삭제 | #11 |
+| 9 | **F-08 잡기**: 스윙(선분 판정)·박수·움켜쥐기·마우스 클릭. 분열(F-10) 전까지는 다 잡으면 1마리 보충 | #12 |
 
 ## 3. 주요 결정과 이유
 
@@ -52,7 +53,7 @@ src/
 ```bash
 npm install        # public/wasm 생성 (postinstall)
 npm run dev        # http://localhost:5173  (?debug=1 또는 D 키로 디버그 패널)
-npm test           # Vitest 27개
+npm test           # Vitest 37개
 npm run build      # tsc(strict) + vite build
 ```
 
@@ -60,20 +61,21 @@ npm run build      # tsc(strict) + vite build
 
 ## 6. 검증한 것 / 못 한 것
 
-- ✅ 타입 체크(strict)·빌드·테스트 27개 통과
+- ✅ 타입 체크(strict)·빌드·테스트 37개 통과 (F-08 판정 10개 포함)
 - ✅ 브라우저에서 가짜 카메라 스트림으로 전체 흐름 확인: 모델 로딩(로컬, GPU) → 게임 화면(거울 영상·HUD·모기) → 그만하기 → 결과 이미지 → 다시 하기. 콘솔 에러 없음
 - ⏳ **실제 얼굴로는 아직 확인 못 함** (자동화 환경에서 카메라 권한을 줄 수 없음). 확인 항목:
   - 모기가 얼굴로 날아와 앉고 무는지, 물린 자리가 붉게 붓는지
   - 고개를 돌려도 부기가 같은 피부 자리에 남는지
   - `?debug=1`에서 코끝 점이 실제 코 위에 있고, 부기 중심 원이 볼록한 곳과 겹치는지
+  - 손바닥으로 모기를 빠르게 치면 죽고, 천천히 올려두면 안 죽는지 / 박수·움켜쥐기·클릭으로 잡히는지
+  - 손 판정 수치(스윙 속도 1.5 faceW/s, grip 1.8/1.1)는 실측 후 `src/game/config.ts`에서 조정
 
 ## 7. 남은 일
 
 | 기능 | 내용 | 담당 |
 |---|---|---|
-| F-08 | 손(스윙·박수·움켜쥐기)·클릭으로 모기 잡기. `FrameInput.hands`, `taps`는 이미 들어온다 | C |
-| F-09 | 잡을 때 피 튀김 | C |
-| F-10 | 분열. `manager.spawnAt(pos, "SPAWNING")`, `GameImpl.cap`(품질 상한) 사용 | C (다른 팀원) |
+| F-09 | 잡을 때 피 튀김. `GameImpl.kills`의 위치에서 파티클 | C |
+| F-10 | 분열. `GameImpl.kills`(이번 프레임 처치 위치)마다 `manager.spawnAt(pos, "SPAWNING")` 2회, `GameImpl.cap`(품질 상한) 준수. 그 뒤 `refillIfEmpty()` 임시 보충 삭제 | C (다른 팀원) |
 | F-05 | 4 s 접근 보장, 거리 비례 가속 | C |
 | F-04 | 얼굴이 안 보일 때 화면 중앙 배회 (지금은 제자리 대기) | C |
 | F-11 | "얼굴 어디 갔어?" 표시 | C |
