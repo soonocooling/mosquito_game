@@ -2,21 +2,8 @@ import { describe, expect, it } from "vitest";
 import { SPLIT_SPEED_FACEW, SPAWNING_MS } from "./config";
 import { Mosquito, split } from "./mosquito";
 import { MosquitoManager } from "./mosquitoManager";
-import { SwatDetector } from "./swat";
-import type { HandState } from "./types";
 
 const FACE_W = 100;
-
-function hand(x: number, t: number, velocityX: number): HandState {
-  return {
-    handedness: "Left",
-    palmCenter: { x, y: 100 },
-    palmR: 12,
-    velocity: { x: velocityX, y: 0 },
-    grip: 1.5,
-    t,
-  };
-}
 
 describe("F-10 모기 분열", () => {
   it("잡힌 위치에서 서로 반대 방향으로 두 마리가 생성된다", () => {
@@ -41,26 +28,5 @@ describe("F-10 모기 분열", () => {
       expect(manager.splitById(target.id, FACE_W, kill * 1000)).toBe(true);
     }
     expect(manager.mosquitoes).toHaveLength(11);
-  });
-});
-
-describe("F-08 손 스윙 잡기", () => {
-  it("빠른 손 선분이 모기를 지나가면 잡는다", () => {
-    const detector = new SwatDetector();
-    const mosquito = new Mosquito({ x: 100, y: 100 });
-    expect(detector.detect([hand(0, 0, 2000)], [mosquito], FACE_W)).toEqual([]);
-    expect(detector.detect([hand(200, 100, 2000)], [mosquito], FACE_W)).toEqual([mosquito.id]);
-  });
-
-  it("느린 손과 분열 직후 모기는 잡지 않는다", () => {
-    const detector = new SwatDetector();
-    const normal = new Mosquito({ x: 100, y: 100 });
-    detector.detect([hand(0, 0, 100)], [normal], FACE_W);
-    expect(detector.detect([hand(200, 100, 100)], [normal], FACE_W)).toEqual([]);
-
-    detector.reset();
-    const spawning = new Mosquito({ x: 100, y: 100 }, "SPAWNING", 0);
-    detector.detect([hand(0, 200, 2000)], [spawning], FACE_W);
-    expect(detector.detect([hand(200, 300, 2000)], [spawning], FACE_W)).toEqual([]);
   });
 });

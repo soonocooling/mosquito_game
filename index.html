@@ -1,13 +1,24 @@
 <!doctype html>
-<html lang="en">
+<html lang="ko">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>모기 피하기 (못 함)</title>
+    <meta name="description" content="웹캠 앞에서 모기를 피해봐. 못 피함." />
+    <meta property="og:title" content="모기 피하기 (못 함)" />
+    <meta property="og:description" content="웹캠 앞에서 모기를 피해봐. 못 피함." />
+    <meta property="og:url" content="https://mosquito-game-fawn.vercel.app/" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>mosquito_game</title>
   </head>
   <body>
-    <div id="app"></div>
+    <!-- 화면에는 GL 캔버스가 그린다. display:none이면 프레임이 갱신되지 않아 1px 투명으로 둔다 -->
+    <video id="cam" playsinline muted autoplay></video>
+    <div id="stage">
+      <canvas id="gl"></canvas>
+      <canvas id="overlay"></canvas>
+    </div>
+    <div id="hud" hidden></div>
+    <div id="ui"></div>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

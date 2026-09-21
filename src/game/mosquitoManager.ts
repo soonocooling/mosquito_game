@@ -34,12 +34,13 @@ export class MosquitoManager {
   }
 
   /** F-10: 잡힌 모기 한 마리를 같은 자리의 새 모기 두 마리로 교체합니다. */
-  splitById(id: number, faceWidthPx: number, now: number): boolean {
+  splitById(id: number, faceWidthPx: number, now: number, maxCount = Infinity): boolean {
     const index = this.mosquitoes.findIndex((m) => m.id === id);
     if (index < 0 || this.mosquitoes[index].isInvulnerable) return false;
     const caught = this.mosquitoes[index];
     const children = split(caught.position, faceWidthPx, now);
-    this.mosquitoes.splice(index, 1, ...children);
+    const available = Math.max(0, maxCount - (this.mosquitoes.length - 1));
+    this.mosquitoes.splice(index, 1, ...children.slice(0, available));
     return true;
   }
 

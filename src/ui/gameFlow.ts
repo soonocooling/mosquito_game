@@ -41,6 +41,26 @@ export class GameFlow {
     this.running = true;
   }
 
+  /** 게임 화면에 실제로 들어간 시점부터 기록을 다시 센다 (로딩 시간 제외, 다시 하기) */
+  resetStats() {
+    this.state = { bites: 0, caught: 0, mosquitoCount: 0, elapsedSec: 0 };
+    this.startTime = performance.now();
+    this.hud.update(this.state);
+  }
+
+  setMuted(muted: boolean) {
+    this.buzz.setMuted(muted);
+  }
+
+  /** F-09 "찰싹" 효과음 */
+  playSlap(ms: number, gain: number) {
+    this.buzz.slap(ms, gain);
+  }
+
+  setPaused(paused: boolean) {
+    this.buzz.setPaused(paused);
+  }
+
   stop() {
     if (!this.running) return;
     this.running = false;
