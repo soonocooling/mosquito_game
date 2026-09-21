@@ -1,6 +1,7 @@
 // src/game/mosquitoManager.ts
 // 여러 마리 모기를 관리 (생성 / 매 프레임 갱신 / 렌더용 목록 제공)
 
+import { makeHalfImmortal } from "./immortal";
 import { Mosquito, split } from "./mosquito";
 import type { Vec2, FaceState, GameOutput } from "./types";
 
@@ -34,13 +35,14 @@ export class MosquitoManager {
   }
 
   /** F-10: 잡힌 모기 한 마리를 같은 자리의 새 모기 두 마리로 교체합니다. */
-  splitById(id: number, faceWidthPx: number, now: number, maxCount = Infinity): boolean {
+  splitById(id: number, faceWidthPx: number, now: number): boolean {
     const index = this.mosquitoes.findIndex((m) => m.id === id);
     if (index < 0 || this.mosquitoes[index].isInvulnerable) return false;
     const caught = this.mosquitoes[index];
     const children = split(caught.position, faceWidthPx, now);
-    const available = Math.max(0, maxCount - (this.mosquitoes.length - 1));
-    this.mosquitoes.splice(index, 1, ...children.slice(0, available));
+    // 팀장 결정: 분열로 생긴 두 마리 중 한 마리는 평생 무적. 모기 수 상한은 없다
+    makeHalfImmortal(children);
+    this.mosquitoes.splice(index, 1, ...children);
     return true;
   }
 

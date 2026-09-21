@@ -27,7 +27,6 @@ export class GameImpl implements Game {
   private faceW = 0;
   private viewport = { w: 0, h: 0 };
   private paused = false;
-  private mosquitoCap = Infinity;
   private handsEnabled = true;
   private readonly history = new HandHistory();
   private readonly swatter = new Swatter();
@@ -90,7 +89,7 @@ export class GameImpl implements Game {
     this.kills.push({ pos: { x: m.position.x, y: m.position.y }, kind, t: now });
     this.blood.burst(m.position, this.faceW || 100, now);
     this.flow.playSlap(SLAP_MS, SLAP_GAIN);
-    this.manager.splitById(m.id, this.faceW || 100, now, this.mosquitoCap);
+    this.manager.splitById(m.id, this.faceW || 100, now);
     this.stats.kills++;
     this.flow.onCaught();
   }
@@ -102,12 +101,7 @@ export class GameImpl implements Game {
   }
 
   setQuality(q: Quality): void {
-    this.mosquitoCap = q.mosquitoCap;
     this.handsEnabled = q.handsEnabled;
-  }
-
-  get cap(): number {
-    return this.mosquitoCap;
   }
 
   setMuted(m: boolean): void {
