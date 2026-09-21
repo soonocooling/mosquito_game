@@ -7,6 +7,10 @@ export const ANCHOR_IDS = [10, 1, 152, 50, 280, 105, 334, 0];
 /** 얼굴 중심으로 쓰는 랜드마크 (코끝) */
 export const FACE_CENTER_IDX = 1;
 
+// ---- F-10 분열 추가 규칙 (팀장 결정: 너무 쉽게 죽어서 재미가 없음) ----
+/** 분열로 생긴 모기 중 평생 무적이 되는 비율. 2마리로 나뉘면 1마리 */
+export const SPLIT_IMMORTAL_RATIO = 0.5;
+
 // ---- F-06 무는 동작 ----
 /** 목표와 이 거리(faceW) 안에 들어오면 착지 */
 export const LAND_DIST = 0.1;

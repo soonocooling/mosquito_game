@@ -27,6 +27,7 @@
 | 8 | **게임 연결**: 인식 모듈(`src/perception/`)을 스펙 형식으로 재구성, `src/main.ts` 루프로 카메라 → 인식 → 모기 → 부기 → HUD → 결과 연결. 폰 관련 코드 삭제 | #11 |
 | 9 | **F-08 잡기**: 스윙(선분 판정)·박수·움켜쥐기·마우스 클릭. 분열(F-10) 전까지는 다 잡으면 1마리 보충 | #12 |
 | 10 | **F-09 피 튀김**: 방울 12~20개(중력, 400 ms) + 바닥 자국(1.5 s 페이드) + "찰싹" 효과음(화이트노이즈 60 ms). 객체 풀, 동시 500개 상한 | #13 |
+| 11 | **분열 추가 규칙** (팀장 결정: 모기가 너무 쉽게 죽어서 재미없음): 분열로 생긴 모기 중 절반은 평생 무적. `immortal` 플래그 + `makeHalfImmortal()`을 먼저 넣어두고 F-10이 호출 | #14 |
 
 ## 3. 주요 결정과 이유
 
@@ -76,7 +77,7 @@ npm run build      # tsc(strict) + vite build
 
 | 기능 | 내용 | 담당 |
 |---|---|---|
-| F-10 | 분열. `GameImpl.kills`(이번 프레임 처치 위치)마다 `manager.spawnAt(pos, "SPAWNING")` 2회, `GameImpl.cap`(품질 상한) 준수. 그 뒤 `refillIfEmpty()` 임시 보충 삭제 | C (다른 팀원) |
+| F-10 | 분열 (`feat/F-10-split`에서 진행 중). **최신 main을 merge 필요** — 그 브랜치의 `swat.ts`·`fullDemoMain.ts`·`handTracking.ts` 수정은 main에서 이미 대체/삭제됨. `GameImpl.kill()`에서 `removeById` 대신 분열 → 새 두 마리에 `makeHalfImmortal(children)` → `GameImpl.cap` 준수 → `refillIfEmpty()` 임시 보충 삭제 | C (jayden000h) |
 | F-05 | 4 s 접근 보장, 거리 비례 가속 | C |
 | F-04 | 얼굴이 안 보일 때 화면 중앙 배회 (지금은 제자리 대기) | C |
 | F-11 | "얼굴 어디 갔어?" 표시 | C |
