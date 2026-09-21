@@ -27,8 +27,12 @@ export class Camera {
   private stream: MediaStream | null = null;
   private wakeLock: { release: () => Promise<void> } | null = null;
   private orientationQuery: MediaQueryList | null = null;
+  // 회전 감지(가로로 돌리면 게임 정지)는 실제로 손으로 돌릴 수 있는 기기에서만 의미가 있다.
+  // 노트북·데스크톱은 원래부터 가로라서 이 기능을 적용하면 안 된다 [결정].
+  private readonly isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
   private orientationHandler = () => {
-    this.callbacks.onOrientationBlocked?.(this.orientationQuery?.matches ?? false);
+    const blocked = this.isMobile && (this.orientationQuery?.matches ?? false);
+    this.callbacks.onOrientationBlocked?.(blocked);
   };
   private visibilityHandler = () => {
     void this.handleVisibilityChange();
@@ -43,7 +47,7 @@ export class Camera {
   }
 
   async start(): Promise<boolean> {
-    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    const isMobile = this.isMobile;
     const constraints: MediaStreamConstraints = isMobile
       ? {
           video: {
