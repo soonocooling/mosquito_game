@@ -1,7 +1,5 @@
 // src/game/types.ts
-// F-04 모기 비행에서 쓰는 공용 타입.
-// 실제 얼굴/손 인식(F-01~F-03) 담당자가 코드를 올리면
-// 여기 FaceState 모양을 서로 맞춰봐야 할 수 있어요 (채팅으로 합의 후 조정).
+// F-04 모기 비행 + F-01~F-03 인식 모듈이 함께 쓰는 공용 타입.
 
 export interface Vec2 {
   x: number;
@@ -19,9 +17,18 @@ export type MosquitoState =
   | "COOLDOWN";
 
 export interface FaceState {
-  // 랜드마크 인덱스 -> 화면 좌표(px). 예: landmarks[10] = 이마
+  // 랜드마크 인덱스 -> 화면 좌표(px). 예: landmarks[10] = 이마. FaceTracker(F-02)가 채워줌.
   landmarks: Record<number, Vec2>;
   faceWidthPx: number; // 기획서의 faceW를 px로 표현한 값
   velocity: Vec2; // 얼굴 이동 속도 (px/s)
   visible: boolean;
+}
+
+// 기획서 데이터 모델의 HandState. HandTracker(F-03)가 채워줌 (F-08 잡기 판정용).
+export interface HandState {
+  handedness: "Left" | "Right";
+  palmCenter: Vec2;
+  palmR: number;
+  velocity: Vec2; // px/s
+  grip: number; // 값이 작을수록 움켜쥔 상태
 }
