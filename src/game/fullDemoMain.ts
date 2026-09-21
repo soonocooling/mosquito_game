@@ -149,7 +149,11 @@ function loop() {
   const handDebug = handResults
     .map((h) => `${h.handedness}: v=${Math.hypot(h.velocity.x, h.velocity.y).toFixed(0)}px/s grip=${h.grip.toFixed(2)}`)
     .join("\n");
-  debugEl.textContent = `face: ${faceResult.visible ? "visible" : "lost"} faceW=${faceWidthScreenPx.toFixed(0)}px\n${handDebug}`;
+  const track = (video.srcObject as MediaStream | null)?.getVideoTracks()[0];
+  const videoDebug =
+    `video: ${video.videoWidth}x${video.videoHeight} readyState=${video.readyState} paused=${video.paused}\n` +
+    `track: ${track ? `${track.readyState} muted=${track.muted} label=${track.label}` : "없음"}`;
+  debugEl.textContent = `${videoDebug}\nface: ${faceResult.visible ? "visible" : "lost"} faceW=${faceWidthScreenPx.toFixed(0)}px\n${handDebug}`;
 
   flow?.tick(manager.mosquitoes.length);
   requestAnimationFrame(loop);
