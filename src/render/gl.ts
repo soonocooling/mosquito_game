@@ -52,21 +52,55 @@ export function createRenderer(canvas: HTMLCanvasElement, video: HTMLVideoElemen
   if (!ctx) throw new Error('WebGL2를 지원하지 않는 브라우저');
   const gl: WebGL2RenderingContext = ctx;
 
-  const prog = link(gl);
-  const uVideo = uniform(gl, prog, 'uVideo');
-  const uBites = uniform(gl, prog, 'uBites');
-  const uCount = uniform(gl, prog, 'uCount');
-  const uAspect = uniform(gl, prog, 'uAspect');
-  const uCrop = uniform(gl, prog, 'uCrop');
-  const vao = gl.createVertexArray(); // 속성은 없지만 일부 드라이버가 VAO 바인딩을 요구한다
+  // GL 자원. 컨텍스트 손실(iOS 백그라운드 전환 등) 후 복구되면 다시 만든다.
+  // 부기 저장소는 JS 메모리에 있으므로 손실과 무관하게 유지된다.
+  interface GLResources {
+    prog: WebGLProgram;
+    uVideo: WebGLUniformLocation;
+    uBites: WebGLUniformLocation;
+    uCount: WebGLUniformLocation;
+    uAspect: WebGLUniformLocation;
+    uCrop: WebGLUniformLocation;
+    vao: WebGLVertexArrayObject; // 속성은 없지만 일부 드라이버가 VAO 바인딩을 요구한다
+    tex: WebGLTexture;
+  }
 
-  const tex = gl.createTexture();
-  gl.bindTexture(gl.TEXTURE_2D, tex);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-  // UNPACK_FLIP_Y_WEBGL은 기본값(false) 유지 — 부록 B
+  function createResources(): GLResources {
+    const prog = link(gl);
+    const vao = gl.createVertexArray();
+    const tex = gl.createTexture();
+    if (!vao || !tex) throw new Error('GL 자원 생성 실패');
+    gl.bindTexture(gl.TEXTURE_2D, tex);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    // UNPACK_FLIP_Y_WEBGL은 기본값(false) 유지 — 부록 B
+    return {
+      prog,
+      uVideo: uniform(gl, prog, 'uVideo'),
+      uBites: uniform(gl, prog, 'uBites'),
+      uCount: uniform(gl, prog, 'uCount'),
+      uAspect: uniform(gl, prog, 'uAspect'),
+      uCrop: uniform(gl, prog, 'uCrop'),
+      vao,
+      tex,
+    };
+  }
+
+  let res: GLResources | null = createResources();
+
+  canvas.addEventListener('webglcontextlost', (e) => {
+    e.preventDefault(); // 이걸 해야 restored 이벤트가 온다
+    res = null;
+  });
+  canvas.addEventListener('webglcontextrestored', () => {
+    try {
+      res = createResources();
+    } catch (err) {
+      console.error('[render] GL 컨텍스트 복구 실패', err);
+    }
+  });
 
   const store = new BiteStore();
   const biteData = new Float32Array(MAX_BITES_UNIFORM * 4);
@@ -114,22 +148,22 @@ export function createRenderer(canvas: HTMLCanvasElement, video: HTMLVideoElemen
       store.animate(now);
 
       // 비디오 프레임이 아직 없으면 그리지 않는다 (HAVE_CURRENT_DATA = 2)
-      if (video.readyState < 2 || W <= 0 || H <= 0 || vw <= 0 || vh <= 0) return;
+      if (!res || video.readyState < 2 || W <= 0 || H <= 0 || vw <= 0 || vh <= 0) return;
 
       gl.viewport(0, 0, canvas.width, canvas.height);
-      gl.useProgram(prog);
-      gl.bindVertexArray(vao);
+      gl.useProgram(res.prog);
+      gl.bindVertexArray(res.vao);
 
       gl.activeTexture(gl.TEXTURE0);
-      gl.bindTexture(gl.TEXTURE_2D, tex);
+      gl.bindTexture(gl.TEXTURE_2D, res.tex);
       gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, video);
-      gl.uniform1i(uVideo, 0);
+      gl.uniform1i(res.uVideo, 0);
 
       const n = face.landmarks.length > 0 ? store.writeUniforms(face, W, H, biteData) : 0;
-      gl.uniform4fv(uBites, biteData);
-      gl.uniform1i(uCount, n);
-      gl.uniform1f(uAspect, W / H);
-      gl.uniform2f(uCrop, cropX, cropY);
+      gl.uniform4fv(res.uBites, biteData);
+      gl.uniform1i(res.uCount, n);
+      gl.uniform1f(res.uAspect, W / H);
+      gl.uniform2f(res.uCrop, cropX, cropY);
 
       gl.drawArrays(gl.TRIANGLES, 0, 3);
     },
