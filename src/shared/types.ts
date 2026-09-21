@@ -66,7 +66,6 @@ export interface Quality {
   detectScale: number;    // 인식 입력 축소 배율 1 | 0.66 | 0.5 (A)
   glScale: number;        // GL 캔버스 해상도 배율 1 | 0.75 | 0.5 (B)
   maxBites: 32 | 16;      // 부기 uniform 상한 (B)
-  mosquitoCap: number;    // 모기 엔티티 상한 (C)
   handsEnabled: boolean;  // false면 손 추론 중단, 탭만 인정 (A, C)
 }
 

@@ -109,7 +109,7 @@ overlay.addEventListener('pointerdown', (e) => {
 });
 
 const QUALITY_HIGH: Quality = {
-  level: 0, handEvery: 1, numHands: 2, detectScale: 1, glScale: 1, maxBites: 32, mosquitoCap: 200, handsEnabled: true,
+  level: 0, handEvery: 1, numHands: 2, detectScale: 1, glScale: 1, maxBites: 32, handsEnabled: true,
 };
 const QUALITY_LOW: Quality = { ...QUALITY_HIGH, level: 5, glScale: 0.5, maxBites: 16 };
 let quality = QUALITY_HIGH;

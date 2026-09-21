@@ -41,7 +41,7 @@ export const DT_MAX_MS = 50;
 
 // ---- F-15 기본 Quality (지금은 데스크톱 웹캠만 지원) ----
 export const QUALITY_DESKTOP: Quality = {
-  level: 0, handEvery: 1, numHands: 2, detectScale: 1, glScale: 1, maxBites: 32, mosquitoCap: 200, handsEnabled: true,
+  level: 0, handEvery: 1, numHands: 2, detectScale: 1, glScale: 1, maxBites: 32, handsEnabled: true,
 };
 
 // ---- F-15 자동 조절 ----

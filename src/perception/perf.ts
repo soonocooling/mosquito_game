@@ -14,11 +14,12 @@ import {
 
 /**
  * 단계별 조치 (spec F-15 표). 3번의 "glScale 0.75 → 0.5"는 두 단계로 나눴다.
+ * 모기 수 상한 단계는 팀장 결정으로 없앴다 (모기는 무제한).
  * 1 handEvery 3 · 2 numHands 1 · 3 glScale 0.75 · 4 glScale 0.5 · 5 detectScale 0.5
- * 6 maxBites 16 · 7 mosquitoCap 80 · 8 손 인식 끔(복귀하지 않음)
+ * 6 maxBites 16 · 7 손 인식 끔(복귀하지 않음)
  */
-export const MAX_LEVEL = 8;
-export const HANDS_OFF_LEVEL = 8;
+export const MAX_LEVEL = 7;
+export const HANDS_OFF_LEVEL = 7;
 
 export function qualityForLevel(base: Quality, level: number): Quality {
   const q: Quality = { ...base, level };
@@ -28,7 +29,6 @@ export function qualityForLevel(base: Quality, level: number): Quality {
   if (level >= 4) q.glScale = Math.min(base.glScale, 0.5);
   if (level >= 5) q.detectScale = Math.min(base.detectScale, 0.5);
   if (level >= 6) q.maxBites = 16;
-  if (level >= 7) q.mosquitoCap = Math.min(base.mosquitoCap, 80);
   if (level >= HANDS_OFF_LEVEL) q.handsEnabled = false;
   return q;
 }
