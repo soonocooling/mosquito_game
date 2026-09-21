@@ -1,13 +1,15 @@
 // src/game/index.ts
 // C의 Game 구현 (spec 5.2). MosquitoManager(F-04, F-06), 잡기(F-08), GameFlow(F-11 HUD·소리)를 main.ts에 연결한다.
-// F-09(피 튀김)·F-10(분열)은 아직 없음 — kills 목록(처치 위치)을 받아서 붙이면 된다.
+// 처치하면 피 튀김·"찰싹"(F-09). F-10(분열)은 아직 없음 — kills 목록(처치 위치)을 받아서 붙이면 된다.
 
 import type { FrameInput, Game, GameOutput, GameStats, Quality, Vec2 } from "../shared/types";
 import { GameFlow } from "../ui/gameFlow";
+import { SLAP_GAIN, SLAP_MS } from "./config";
 import { HandHistory } from "./hands";
 import type { Mosquito } from "./mosquito";
 import { MosquitoManager } from "./mosquitoManager";
 import { drawMosquitoSprite } from "./mosquitoSprite";
+import { BloodEffects } from "./particles";
 import { Swatter, type SwatKind } from "./swat";
 
 /** 처치 1건 (F-09 피 튀김·F-10 분열 입력) */
@@ -29,6 +31,8 @@ export class GameImpl implements Game {
   private handsEnabled = true;
   private readonly history = new HandHistory();
   private readonly swatter = new Swatter();
+  private readonly blood = new BloodEffects();
+  private now = 0;
   /** 이번 프레임의 처치 목록 (재사용 배열) */
   readonly kills: Kill[] = [];
   readonly stats: GameStats = { bites: 0, kills: 0, mosquitoCount: 0, startedAt: 0 };
@@ -51,6 +55,7 @@ export class GameImpl implements Game {
     this.manager.mosquitoes.length = 0;
     this.history.clear();
     this.swatter.reset();
+    this.blood.clear();
     this.manager.spawnFromEdge(this.viewport.w || innerWidth, this.viewport.h || innerHeight);
     this.flow.resetStats();
     this.stats.bites = 0;
@@ -63,6 +68,8 @@ export class GameImpl implements Game {
     this.viewport = input.viewport;
     this.kills.length = 0;
     if (this.paused) return EMPTY_OUTPUT;
+    this.now = input.now;
+    this.blood.update(input.dt, input.now);
     const face = input.face;
     this.faceW = face.faceW;
 
@@ -82,6 +89,8 @@ export class GameImpl implements Game {
 
   private kill(m: Mosquito, kind: SwatKind, now: number): void {
     this.kills.push({ pos: { x: m.position.x, y: m.position.y }, kind, t: now });
+    this.blood.burst(m.position, this.faceW || 100, now);
+    this.flow.playSlap(SLAP_MS, SLAP_GAIN);
     this.manager.removeById(m.id);
     this.stats.kills++;
     this.flow.onCaught();
@@ -94,6 +103,7 @@ export class GameImpl implements Game {
   }
 
   drawOverlay(ctx: CanvasRenderingContext2D): void {
+    this.blood.draw(ctx, this.now);
     const size = this.manager.mosquitoes[0]?.getSize(this.faceW || 100) ?? 0;
     for (const m of this.manager.mosquitoes) drawMosquitoSprite(ctx, m, size);
   }
