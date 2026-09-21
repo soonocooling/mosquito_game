@@ -5,6 +5,7 @@
 // main.ts는 건드리지 않았고, /mosquito-test.html 로 접속해야 이 파일이 실행됩니다.
 
 import { MosquitoManager } from "./mosquitoManager";
+import { drawMosquitoSprite } from "./mosquitoSprite";
 import { GameFlow } from "../ui/gameFlow";
 import type { Vec2 } from "./types";
 
@@ -86,10 +87,7 @@ function loop() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   for (const m of manager.mosquitoes) {
     const size = m.getSize(FAKE_FACE_WIDTH);
-    ctx.fillStyle = m.wingFrame === 0 ? "#333" : "#555";
-    ctx.beginPath();
-    ctx.ellipse(m.position.x, m.position.y, size, size * 0.6, 0, 0, Math.PI * 2);
-    ctx.fill();
+    drawMosquitoSprite(ctx, m, size);
   }
 
   requestAnimationFrame(loop);
