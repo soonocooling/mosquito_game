@@ -14,7 +14,7 @@ import {
   MERGE_DIST_RATIO,
   OVERSHOOT_PEAK,
 } from './config';
-import type { Bite, BiteEvent, FaceFrame, Vec2 } from './types';
+import type { Bite, BiteEvent, FaceFrame, Vec2 } from '../shared/types';
 
 /** 저장소 내부 요소. 병합으로 목표가 오를 때 차이분에만 애니메이션을 다시 건다 */
 interface StoredBite extends Bite {

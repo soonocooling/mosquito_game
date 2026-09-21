@@ -4,7 +4,7 @@
 import { BiteStore } from './bites';
 import { MAX_BITES_UNIFORM } from './config';
 import { FRAG_SRC, VERT_SRC } from './shaders';
-import type { Bite, BiteEvent, FaceFrame, Quality, Renderer } from './types';
+import type { Bite, BiteEvent, FaceFrame, Quality, Renderer } from '../shared/types';
 
 function compile(gl: WebGL2RenderingContext, type: number, src: string): WebGLShader {
   const sh = gl.createShader(type);

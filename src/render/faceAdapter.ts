@@ -6,7 +6,7 @@
 // A의 Camera.mapPoint와도 같은 결과지만, 478점마다 새 객체를 만들지 않으려고 여기서 직접 계산한다.
 
 import type { FaceTrackResult } from '../game/faceTracking';
-import type { FaceFrame, Vec2 } from './types';
+import type { FaceFrame, Vec2 } from '../shared/types';
 
 const LANDMARK_COUNT = 478;
 const EYE_OUTER_R = 33; // 회전 기준 (5.4)

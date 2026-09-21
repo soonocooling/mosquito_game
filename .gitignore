@@ -22,3 +22,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Vercel
+.vercel
+
+# MediaPipe WASM (postinstall이 node_modules에서 복사)
+public/wasm

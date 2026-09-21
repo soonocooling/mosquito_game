@@ -1,0 +1,12 @@
+---
+description: 프로젝트 공통 규칙
+alwaysApply: true
+---
+- TypeScript strict 모드. any 금지.
+- 기능 요구사항은 docs/product-spec.md 를 따른다. 작업 전 해당 기능 ID(F-xx)를 읽는다.
+- src/shared/ 파일은 절대 수정하지 않는다. 변경이 필요하면 제안만 한다.
+- 좌표는 거울 반전이 끝난 화면 px. 길이·속도는 faceW 단위로 계산한다.
+- 튜닝 수치는 각 폴더의 config.ts 에만 둔다. 코드에 숫자를 직접 쓰지 않는다.
+- localStorage 등 브라우저 저장소와 서버 전송을 사용하지 않는다. 카메라 영상은 기기 밖으로 보내지 않는다.
+- 새 라이브러리 설치는 제안만 하고 직접 설치하지 않는다.
+- erasableSyntaxOnly: enum, namespace, 생성자 파라미터 프로퍼티(constructor(private x)) 금지. 타입 import는 import type.

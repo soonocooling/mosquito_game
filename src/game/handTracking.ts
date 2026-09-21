@@ -7,9 +7,8 @@ import {
 } from "@mediapipe/tasks-vision";
 import type { Vec2 } from "./types";
 
-const WASM_URL = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.35/wasm";
-const HAND_MODEL_URL =
-  "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task";
+const WASM_URL = "/wasm"; // postinstall이 node_modules에서 복사 (product-spec 9.1)
+const HAND_MODEL_URL = "/models/hand_landmarker.task";
 
 const VELOCITY_WINDOW_MS = 100; // 손 속도 = 최근 100ms 이동평균 [명시]
 const PALM_LANDMARK_IDX = [0, 5, 9, 13, 17];

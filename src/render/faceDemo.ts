@@ -14,7 +14,7 @@ import { FaceTracker, type FaceTrackResult } from '../game/faceTracking';
 import { rotate } from './bites';
 import { FaceFrameAdapter } from './faceAdapter';
 import { createRenderer } from './gl';
-import type { BiteEvent, Vec2 } from './types';
+import type { BiteEvent, Vec2 } from '../shared/types';
 
 // 물기 앵커 후보 (5.4). 탭 위치에서 가장 가까운 것에 붙인다
 const ANCHORS = [10, 1, 152, 50, 280, 105, 334, 0];
