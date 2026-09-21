@@ -23,21 +23,11 @@ describe("F-10 모기 분열", () => {
     const manager = new MosquitoManager();
     manager.mosquitoes.push(new Mosquito({ x: 100, y: 100 }));
     for (let kill = 0; kill < 10; kill += 1) {
-      // 평생 무적이 아닌 모기를 골라 잡는다
-      const target = manager.mosquitoes.find((m) => !m.immortal)!;
+      const target = manager.mosquitoes[0];
       target.state = "APPROACH";
       expect(manager.splitById(target.id, FACE_W, kill * 1000)).toBe(true);
     }
     expect(manager.mosquitoes).toHaveLength(11);
-  });
-
-  it("분열로 생긴 두 마리 중 정확히 한 마리는 평생 무적이다", () => {
-    const manager = new MosquitoManager();
-    const first = new Mosquito({ x: 100, y: 100 });
-    manager.mosquitoes.push(first);
-    manager.splitById(first.id, FACE_W, 0);
-    expect(manager.mosquitoes).toHaveLength(2);
-    expect(manager.mosquitoes.filter((m) => m.immortal)).toHaveLength(1);
   });
 
   it("모기 수 상한이 없다 — 200마리가 넘어도 계속 분열한다", () => {

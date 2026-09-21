@@ -8,7 +8,6 @@ import type { PerfMonitor } from '../perception/perf';
 export interface DebugMosquito {
   position: Vec2;
   state: string;
-  immortal?: boolean;
 }
 
 const tmp: Vec2 = { x: 0, y: 0 };
@@ -106,7 +105,7 @@ export class DebugPanel {
     // 모기 상태 문자
     ctx.fillStyle = '#fff';
     ctx.font = '10px ui-monospace, monospace';
-    for (const m of mosquitoes) ctx.fillText(m.state.slice(0, 3) + (m.immortal ? " 무적" : ""), m.position.x + 8, m.position.y - 8);
+    for (const m of mosquitoes) ctx.fillText(m.state.slice(0, 3), m.position.x + 8, m.position.y - 8);
 
     // 패널 텍스트는 4번/초만 갱신 (DOM 부담)
     if (input.now - this.lastTextAt < 250) return;

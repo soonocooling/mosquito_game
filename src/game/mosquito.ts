@@ -71,12 +71,9 @@ export class Mosquito {
     return 0.06 * faceWidthPx;
   }
 
-  /** 평생 무적: 분열로 생긴 모기 중 절반 (팀장 결정, immortal.ts). 어떤 방법으로도 잡히지 않는다 */
-  immortal = false;
-
-  /** 분열 직후 무적(F-10) 또는 평생 무적. F-08 잡기 판정에서 제외된다 */
+  /** 분열 직후 무적 (F-10). F-08 잡기 판정에서 제외된다 */
   get isInvulnerable(): boolean {
-    return this.immortal || this.state === "SPAWNING";
+    return this.state === "SPAWNING";
   }
 
   private enter(state: MosquitoState) {

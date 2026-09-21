@@ -23,17 +23,13 @@ describe("F-09 피 튀김", () => {
     expect(b.splatCount).toBe(0);
   });
 
-  it("중력으로 아래로 떨어진다", () => {
+  it("중력으로 모든 방울의 아래 방향 속도가 커진다", () => {
     const b = new BloodEffects();
     b.burst({ x: 100, y: 100 }, FW, 0);
-    // 방울 평균 y가 시간이 지나면 커진다(화면 아래 방향)
-    let sumBefore = 0;
-    let sumAfter = 0;
-    const drops = (b as unknown as { drops: { y: number; alive: boolean }[] }).drops.filter((d) => d.alive);
-    for (const d of drops) sumBefore += d.y;
+    const drops = (b as unknown as { drops: { vy: number; alive: boolean }[] }).drops.filter((d) => d.alive);
+    const before = drops.map((d) => d.vy);
     for (let t = 16; t <= 320; t += 16) b.update(16, t);
-    for (const d of drops) sumAfter += d.y;
-    expect(sumAfter / drops.length).toBeGreaterThan(sumBefore / drops.length);
+    drops.forEach((d, i) => expect(d.vy).toBeGreaterThan(before[i]));
   });
 
   it("연속 처치해도 동시 방울은 상한(500)을 넘지 않는다", () => {

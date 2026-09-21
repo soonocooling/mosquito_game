@@ -4,7 +4,7 @@
 
 import type { FrameInput, Game, GameOutput, GameStats, Quality, Vec2 } from "../shared/types";
 import { GameFlow } from "../ui/gameFlow";
-import { SLAP_GAIN, SLAP_MS } from "./config";
+import { SCREEN_MARGIN, SLAP_GAIN, SLAP_MS } from "./config";
 import { HandHistory } from "./hands";
 import type { Mosquito } from "./mosquito";
 import { MosquitoManager } from "./mosquitoManager";
@@ -78,6 +78,8 @@ export class GameImpl implements Game {
 
     // FaceFrame.landmarks(배열)는 인덱스로 접근하는 Record<number, Vec2>와 호환된다
     const out = this.manager.update(face.landmarks as Record<number, Vec2>, face.faceW, face.visible);
+    // 모기는 화면 밖으로 나가지 않는다 (팀장 결정)
+    this.manager.confine(input.viewport.w, input.viewport.h, SCREEN_MARGIN * face.faceW);
     for (let i = 0; i < out.biteEvents.length; i++) this.flow.onBite();
     this.stats.bites += out.biteEvents.length;
     this.stats.mosquitoCount = this.manager.mosquitoes.length;
