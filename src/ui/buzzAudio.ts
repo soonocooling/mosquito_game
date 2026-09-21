@@ -7,6 +7,7 @@ export class BuzzAudio {
   private gainNode: GainNode | null = null;
   private oscillators: OscillatorNode[] = [];
   private muted = false;
+  private noise: AudioBuffer | null = null;
 
   /** 반드시 "시작" 버튼 클릭 핸들러 안에서 호출해야 함 (자동재생 제한 우회) */
   init() {
@@ -61,10 +62,37 @@ export class BuzzAudio {
     void (paused ? this.ctx.suspend() : this.ctx.resume()).catch(() => {});
   }
 
+  /**
+   * F-09 "찰싹": 화이트노이즈를 지수 감쇠로 짧게 재생 (파일 없음). 음소거면 무시
+   * @param ms 길이, @param gain 시작 음량
+   */
+  slap(ms: number, gain: number) {
+    if (!this.ctx || this.muted) return;
+    const ctx = this.ctx;
+    if (!this.noise) {
+      const len = Math.ceil(ctx.sampleRate * 0.2);
+      this.noise = ctx.createBuffer(1, len, ctx.sampleRate);
+      const data = this.noise.getChannelData(0);
+      for (let i = 0; i < len; i++) data[i] = Math.random() * 2 - 1;
+    }
+    const src = ctx.createBufferSource();
+    src.buffer = this.noise;
+    const env = ctx.createGain();
+    const t = ctx.currentTime;
+    const dur = ms / 1000;
+    env.gain.setValueAtTime(gain, t);
+    env.gain.exponentialRampToValueAtTime(0.001, t + dur);
+    src.connect(env);
+    env.connect(ctx.destination);
+    src.start(t);
+    src.stop(t + dur);
+  }
+
   stop() {
     this.oscillators.forEach((o) => o.stop());
     this.oscillators = [];
     this.ctx?.close();
     this.ctx = null;
+    this.noise = null;
   }
 }

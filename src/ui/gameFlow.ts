@@ -52,6 +52,11 @@ export class GameFlow {
     this.buzz.setMuted(muted);
   }
 
+  /** F-09 "찰싹" 효과음 */
+  playSlap(ms: number, gain: number) {
+    this.buzz.slap(ms, gain);
+  }
+
   setPaused(paused: boolean) {
     this.buzz.setPaused(paused);
   }

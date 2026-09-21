@@ -26,6 +26,7 @@
 | 7 | 원래 A 담당자가 작업하지 않아 팀장이 **A 작업** 인수. Day 0 기반: `src/shared/types.ts`(스펙 5.2, 3인 동의 생략), strict, Vite·Vercel 설정, 모델·WASM 로컬화, Vitest, PR 템플릿, Cursor 규칙 | #10 |
 | 8 | **게임 연결**: 인식 모듈(`src/perception/`)을 스펙 형식으로 재구성, `src/main.ts` 루프로 카메라 → 인식 → 모기 → 부기 → HUD → 결과 연결. 폰 관련 코드 삭제 | #11 |
 | 9 | **F-08 잡기**: 스윙(선분 판정)·박수·움켜쥐기·마우스 클릭. 분열(F-10) 전까지는 다 잡으면 1마리 보충 | #12 |
+| 10 | **F-09 피 튀김**: 방울 12~20개(중력, 400 ms) + 바닥 자국(1.5 s 페이드) + "찰싹" 효과음(화이트노이즈 60 ms). 객체 풀, 동시 500개 상한 | #13 |
 
 ## 3. 주요 결정과 이유
 
@@ -53,7 +54,7 @@ src/
 ```bash
 npm install        # public/wasm 생성 (postinstall)
 npm run dev        # http://localhost:5173  (?debug=1 또는 D 키로 디버그 패널)
-npm test           # Vitest 37개
+npm test           # Vitest 42개
 npm run build      # tsc(strict) + vite build
 ```
 
@@ -61,7 +62,8 @@ npm run build      # tsc(strict) + vite build
 
 ## 6. 검증한 것 / 못 한 것
 
-- ✅ 타입 체크(strict)·빌드·테스트 37개 통과 (F-08 판정 10개 포함)
+- ✅ 타입 체크(strict)·빌드·테스트 42개 통과 (F-08 판정 10개, F-09 5개 포함)
+- ✅ F-09 피 튀김 모양을 브라우저에서 시점별(60 ms / 250 ms / 1 s)로 그려 확인
 - ✅ 브라우저에서 가짜 카메라 스트림으로 전체 흐름 확인: 모델 로딩(로컬, GPU) → 게임 화면(거울 영상·HUD·모기) → 그만하기 → 결과 이미지 → 다시 하기. 콘솔 에러 없음
 - ⏳ **실제 얼굴로는 아직 확인 못 함** (자동화 환경에서 카메라 권한을 줄 수 없음). 확인 항목:
   - 모기가 얼굴로 날아와 앉고 무는지, 물린 자리가 붉게 붓는지
@@ -74,7 +76,6 @@ npm run build      # tsc(strict) + vite build
 
 | 기능 | 내용 | 담당 |
 |---|---|---|
-| F-09 | 잡을 때 피 튀김. `GameImpl.kills`의 위치에서 파티클 | C |
 | F-10 | 분열. `GameImpl.kills`(이번 프레임 처치 위치)마다 `manager.spawnAt(pos, "SPAWNING")` 2회, `GameImpl.cap`(품질 상한) 준수. 그 뒤 `refillIfEmpty()` 임시 보충 삭제 | C (다른 팀원) |
 | F-05 | 4 s 접근 보장, 거리 비례 가속 | C |
 | F-04 | 얼굴이 안 보일 때 화면 중앙 배회 (지금은 제자리 대기) | C |

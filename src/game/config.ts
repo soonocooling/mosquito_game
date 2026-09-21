@@ -48,3 +48,25 @@ export const GRIP_CLOSED = 1.1;
 export const SWAT_COOLDOWN_MS = 200;
 /** 클릭(탭) 반경 (faceW) */
 export const TAP_R = 0.12;
+
+// ---- F-09 피 튀김 ----
+export const BLOOD_COUNT_MIN = 12;
+export const BLOOD_COUNT_MAX = 20;
+/** 파티클 초속 범위 (faceW/s) */
+export const BLOOD_SPEED_MIN = 1;
+export const BLOOD_SPEED_MAX = 3;
+/** 중력 (faceW/s², 화면 아래 방향) */
+export const BLOOD_GRAVITY = 3;
+export const BLOOD_LIFE_MS = 400;
+/** 파티클 크기 (faceW) */
+export const BLOOD_DROP_R = 0.022;
+/** 동시 파티클 상한. 넘으면 오래된 것부터 덮어쓴다 */
+export const BLOOD_MAX = 500;
+/** 바닥 자국: 크기(faceW), 페이드아웃 시간 */
+export const SPLAT_R = 0.09;
+export const SPLAT_LIFE_MS = 1500;
+export const SPLAT_MAX = 64;
+export const BLOOD_COLOR = "#b3001b";
+/** "찰싹" 효과음: 화이트노이즈 길이·음량 */
+export const SLAP_MS = 60;
+export const SLAP_GAIN = 0.5;
